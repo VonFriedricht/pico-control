@@ -35,6 +35,9 @@ while True:
         if response.status_code == 200:
             command = response.json()
 
+            # Dauer festlegen (Standardwert, falls nicht angegeben)
+            duration = float(command.get('duration', 0.1))  # Standard 0.1 Sekunden
+
             # Anweisungen verarbeiten
             if command['type'] == 'keyboard':
                 key = command['key']
@@ -43,9 +46,10 @@ while True:
                 if key.isalpha() and len(key) == 1:
                     keycode = getattr(Keycode, key.upper())  # 'a' -> Keycode.A
                     keyboard.press(keycode)
-                    time.sleep(0.1)
-                    keyboard.release(keycode)
                     print(f"Taste '{key}' wurde gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(keycode)
+                    print(f"Taste '{key}' wurde nach {duration} Sekunden losgelassen.")
                 else:
                     print("Unbekannte Tasteneingabe:", key)
 
@@ -83,13 +87,24 @@ while True:
 
                     # Klick ausführen
                     if button == 'left':
-                        mouse.click(Mouse.LEFT_BUTTON)
-                        print("Linksklick ausgeführt.")
+                        mouse.press(Mouse.LEFT_BUTTON)
+                        print("Linksklick gedrückt.")
                     elif button == 'right':
-                        mouse.click(Mouse.RIGHT_BUTTON)
-                        print("Rechtsklick ausgeführt.")
+                        mouse.press(Mouse.RIGHT_BUTTON)
+                        print("Rechtsklick gedrückt.")
                     else:
                         print("Unbekannter Klicktyp:", button)
+
+                    # Warte für die angegebene Dauer
+                    time.sleep(duration)
+
+                    # Klick loslassen
+                    if button == 'left':
+                        mouse.release(Mouse.LEFT_BUTTON)
+                        print(f"Linksklick nach {duration} Sekunden losgelassen.")
+                    elif button == 'right':
+                        mouse.release(Mouse.RIGHT_BUTTON)
+                        print(f"Rechtsklick nach {duration} Sekunden losgelassen.")
 
                     # Modifikatoren loslassen (falls vorhanden)
                     if 'modifiers' in command:
@@ -113,4 +128,3 @@ while True:
 
     # Warte für kurze Zeit bevor die nächste Anfrage gestellt wird
     time.sleep(1)
-

@@ -20,7 +20,8 @@ def add_command():
             "x": request.args.get('x'),
             "y": request.args.get('y'),
             "button": request.args.get('button'),
-            "key": request.args.get('key')
+            "key": request.args.get('key'),
+            "duration": request.args.get('duration')
         }
 
         # Verarbeite Modifikatoren, die als Liste von Werten in der URL angegeben werden
