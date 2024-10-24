@@ -42,7 +42,7 @@ while True:
             if command['type'] == 'keyboard':
                 key = command['key']
 
-                # Buchstaben 'a'-'z' umsetzen
+                # Buchstaben 'a'-'z' umsetzen oder Pfeiltasten verarbeiten
                 if key.isalpha() and len(key) == 1:
                     keycode = getattr(Keycode, key.upper())  # 'a' -> Keycode.A
                     keyboard.press(keycode)
@@ -50,6 +50,30 @@ while True:
                     time.sleep(duration)
                     keyboard.release(keycode)
                     print(f"Taste '{key}' wurde nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'up':
+                    keyboard.press(Keycode.UP_ARROW)
+                    print("Pfeiltaste nach oben gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.UP_ARROW)
+                    print(f"Pfeiltaste nach oben nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'down':
+                    keyboard.press(Keycode.DOWN_ARROW)
+                    print("Pfeiltaste nach unten gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.DOWN_ARROW)
+                    print(f"Pfeiltaste nach unten nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'left':
+                    keyboard.press(Keycode.LEFT_ARROW)
+                    print("Pfeiltaste nach links gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.LEFT_ARROW)
+                    print(f"Pfeiltaste nach links nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'right':
+                    keyboard.press(Keycode.RIGHT_ARROW)
+                    print("Pfeiltaste nach rechts gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.RIGHT_ARROW)
+                    print(f"Pfeiltaste nach rechts nach {duration} Sekunden losgelassen.")
                 else:
                     print("Unbekannte Tasteneingabe:", key)
 
