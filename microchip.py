@@ -34,15 +34,15 @@ while True:
 
         if response.status_code == 200:
             command = response.json()
-            print(command)
+
             # Dauer festlegen (Standardwert, falls nicht angegeben)
             duration = float(command.get('duration', 0.1))  # Standard 0.1 Sekunden
-            print(duration)
+
             # Anweisungen verarbeiten
             if command['type'] == 'keyboard':
                 key = command['key']
 
-                # Buchstaben 'a'-'z' umsetzen oder Pfeiltasten verarbeiten
+                # Buchstaben 'a'-'z' umsetzen, Pfeiltasten verarbeiten, ESC, Windows oder Home-Taste erkennen
                 if key.isalpha() and len(key) == 1:
                     keycode = getattr(Keycode, key.upper())  # 'a' -> Keycode.A
                     keyboard.press(keycode)
@@ -80,6 +80,18 @@ while True:
                     time.sleep(duration)
                     keyboard.release(Keycode.ESCAPE)
                     print(f"Escape-Taste nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'win' or key.lower() == 'windows':
+                    keyboard.press(Keycode.GUI)
+                    print("Windows-Taste gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.GUI)
+                    print(f"Windows-Taste nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'home':
+                    keyboard.press(Keycode.HOME)
+                    print("Home-Taste gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.HOME)
+                    print(f"Home-Taste nach {duration} Sekunden losgelassen.")
                 else:
                     print("Unbekannte Tasteneingabe:", key)
 
