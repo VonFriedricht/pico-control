@@ -34,10 +34,10 @@ while True:
 
         if response.status_code == 200:
             command = response.json()
-
+            print(command)
             # Dauer festlegen (Standardwert, falls nicht angegeben)
             duration = float(command.get('duration', 0.1))  # Standard 0.1 Sekunden
-
+            print(duration)
             # Anweisungen verarbeiten
             if command['type'] == 'keyboard':
                 key = command['key']
@@ -74,6 +74,12 @@ while True:
                     time.sleep(duration)
                     keyboard.release(Keycode.RIGHT_ARROW)
                     print(f"Pfeiltaste nach rechts nach {duration} Sekunden losgelassen.")
+                elif key.lower() == 'esc' or key.lower() == 'escape':
+                    keyboard.press(Keycode.ESCAPE)
+                    print("Escape-Taste gedrückt.")
+                    time.sleep(duration)
+                    keyboard.release(Keycode.ESCAPE)
+                    print(f"Escape-Taste nach {duration} Sekunden losgelassen.")
                 else:
                     print("Unbekannte Tasteneingabe:", key)
 
