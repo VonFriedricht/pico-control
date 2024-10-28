@@ -6,6 +6,7 @@ import usb_hid
 from adafruit_hid.mouse import Mouse
 from adafruit_hid.keyboard import Keyboard
 from adafruit_hid.keycode import Keycode
+from adafruit_hid.keyboard_layout_us import KeyboardLayoutUS
 from secrets import secrets
 
 # WLAN verbinden
@@ -22,10 +23,11 @@ url = "http://<add something here>:8080/next_command"
 
 # USB-HID Tastatur und Maus initialisieren
 keyboard = Keyboard(usb_hid.devices)
+keyboard_layout = KeyboardLayoutUS(keyboard)
 mouse = Mouse(usb_hid.devices)
 
 # Define a "home" reset point (you can pick any point that is consistent, e.g. top-left)
-RESET_POINT = (-1500, -1500)  # Eine Bewegung weit nach links oben zum "Ankern"
+RESET_POINT = (-1000, -1000)  # Eine Bewegung weit nach links oben zum "Ankern"
 
 while True:
     try:
@@ -40,60 +42,131 @@ while True:
 
             # Anweisungen verarbeiten
             if command['type'] == 'keyboard':
-                key = command['key']
+                key = command.get('key')
+                keys = command.get('keys')
 
-                # Buchstaben 'a'-'z' umsetzen, Pfeiltasten verarbeiten, ESC, Windows oder Home-Taste erkennen
-                if key.isalpha() and len(key) == 1:
-                    keycode = getattr(Keycode, key.upper())  # 'a' -> Keycode.A
-                    keyboard.press(keycode)
-                    print(f"Taste '{key}' wurde gedrückt.")
+                # Zwei oder mehr Tasten gleichzeitig drücken, wenn 'keys' im Befehl vorhanden ist
+                if keys:
+                    pressed_keys = []
+                    for k in keys:
+                        keycode = getattr(Keycode, k.upper(), None)
+                        if keycode:
+                            keyboard.press(keycode)
+                            pressed_keys.append(keycode)
+                            print(f"Taste '{k}' wurde gedrückt.")
                     time.sleep(duration)
-                    keyboard.release(keycode)
-                    print(f"Taste '{key}' wurde nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'up':
-                    keyboard.press(Keycode.UP_ARROW)
-                    print("Pfeiltaste nach oben gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.UP_ARROW)
-                    print(f"Pfeiltaste nach oben nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'down':
-                    keyboard.press(Keycode.DOWN_ARROW)
-                    print("Pfeiltaste nach unten gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.DOWN_ARROW)
-                    print(f"Pfeiltaste nach unten nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'left':
-                    keyboard.press(Keycode.LEFT_ARROW)
-                    print("Pfeiltaste nach links gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.LEFT_ARROW)
-                    print(f"Pfeiltaste nach links nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'right':
-                    keyboard.press(Keycode.RIGHT_ARROW)
-                    print("Pfeiltaste nach rechts gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.RIGHT_ARROW)
-                    print(f"Pfeiltaste nach rechts nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'esc' or key.lower() == 'escape':
-                    keyboard.press(Keycode.ESCAPE)
-                    print("Escape-Taste gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.ESCAPE)
-                    print(f"Escape-Taste nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'win' or key.lower() == 'windows':
-                    keyboard.press(Keycode.GUI)
-                    print("Windows-Taste gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.GUI)
-                    print(f"Windows-Taste nach {duration} Sekunden losgelassen.")
-                elif key.lower() == 'home':
-                    keyboard.press(Keycode.HOME)
-                    print("Home-Taste gedrückt.")
-                    time.sleep(duration)
-                    keyboard.release(Keycode.HOME)
-                    print(f"Home-Taste nach {duration} Sekunden losgelassen.")
-                else:
-                    print("Unbekannte Tasteneingabe:", key)
+                    for keycode in pressed_keys:
+                        keyboard.release(keycode)
+                        print(f"Taste wurde nach {duration} Sekunden losgelassen.")
+
+                # Einzelne Taste drücken
+                elif key:
+                    if key.isalpha() and len(key) == 1:
+                        keycode = getattr(Keycode, key.upper())  # 'a' -> Keycode.A
+                        keyboard.press(keycode)
+                        print(f"Taste '{key}' wurde gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(keycode)
+                        print(f"Taste '{key}' wurde nach {duration} Sekunden losgelassen.")
+                    elif key.isdigit() and len(key) == 1:
+                        keycode = getattr(Keycode, f"KEYPAD_{key}")  # '0' -> Keycode.KEYPAD_0
+                        keyboard.press(keycode)
+                        print(f"Zahl '{key}' wurde gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(keycode)
+                        print(f"Zahl '{key}' wurde nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'up':
+                        keyboard.press(Keycode.UP_ARROW)
+                        print("Pfeiltaste nach oben gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.UP_ARROW)
+                        print(f"Pfeiltaste nach oben nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'down':
+                        keyboard.press(Keycode.DOWN_ARROW)
+                        print("Pfeiltaste nach unten gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.DOWN_ARROW)
+                        print(f"Pfeiltaste nach unten nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'left':
+                        keyboard.press(Keycode.LEFT_ARROW)
+                        print("Pfeiltaste nach links gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.LEFT_ARROW)
+                        print(f"Pfeiltaste nach links nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'right':
+                        keyboard.press(Keycode.RIGHT_ARROW)
+                        print("Pfeiltaste nach rechts gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.RIGHT_ARROW)
+                        print(f"Pfeiltaste nach rechts nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'esc' or key.lower() == 'escape':
+                        keyboard.press(Keycode.ESCAPE)
+                        print("Escape-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.ESCAPE)
+                        print(f"Escape-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'win' or key.lower() == 'windows':
+                        keyboard.press(Keycode.GUI)
+                        print("Windows-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.GUI)
+                        print(f"Windows-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'home':
+                        keyboard.press(Keycode.HOME)
+                        print("Home-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.HOME)
+                        print(f"Home-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'enter':
+                        keyboard.press(Keycode.ENTER)
+                        print("Enter-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.ENTER)
+                        print(f"Enter-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'tab':
+                        keyboard.press(Keycode.TAB)
+                        print("Tab-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.TAB)
+                        print(f"Tab-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'backspace':
+                        keyboard.press(Keycode.BACKSPACE)
+                        print("Backspace-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.BACKSPACE)
+                        print(f"Backspace-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'f1':
+                        keyboard.press(Keycode.F1)
+                        print("F1-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.F1)
+                        print(f"F1-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'f2':
+                        keyboard.press(Keycode.F2)
+                        print("F2-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.F2)
+                        print(f"F2-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'f3':
+                        keyboard.press(Keycode.F3)
+                        print("F3-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.F3)
+                        print(f"F3-Taste nach {duration} Sekunden losgelassen.")
+                    elif key.lower() == 'f4':
+                        keyboard.press(Keycode.F4)
+                        print("F4-Taste gedrückt.")
+                        time.sleep(duration)
+                        keyboard.release(Keycode.F4)
+                        print(f"F4-Taste nach {duration} Sekunden losgelassen.")
+                    else:
+                        print("Unbekannte Tasteneingabe:", key)
+
+            elif command['type'] == 'text':
+                # Text schreiben
+                text = command['text']
+                keyboard_layout.write(text)
+                print(f"Text '{text}' wurde geschrieben.")
 
             elif command['type'] == 'mouse':
                 # Mausanweisung verarbeiten
@@ -170,3 +243,4 @@ while True:
 
     # Warte für kurze Zeit bevor die nächste Anfrage gestellt wird
     time.sleep(1)
+
